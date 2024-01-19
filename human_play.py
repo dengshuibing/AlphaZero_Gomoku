@@ -13,7 +13,7 @@ from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 from policy_value_net_numpy import PolicyValueNetNumpy
 # from policy_value_net import PolicyValueNet  # Theano and Lasagne
-# from policy_value_net_pytorch import PolicyValueNet  # Pytorch
+from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 # from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
 # from policy_value_net_keras import PolicyValueNet  # Keras
 
@@ -61,12 +61,14 @@ def run():
         # mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)
 
         # load the provided model (trained in Theano/Lasagne) into a MCTS player written in pure numpy
-        try:
-            policy_param = pickle.load(open(model_file, 'rb'))
-        except:
-            policy_param = pickle.load(open(model_file, 'rb'),
-                                       encoding='bytes')  # To support python3
-        best_policy = PolicyValueNetNumpy(width, height, policy_param)
+        # try:
+        #     policy_param = pickle.load(open(model_file, 'rb'))
+        # except:
+        #     policy_param = pickle.load(open(model_file, 'rb'),
+        #                                encoding='bytes')  # To support python3
+
+        param_theano = pickle.load(open('best_policy_8_8_5.model', 'rb'),encoding='bytes')
+        best_policy = PolicyValueNet(width, height, param_theano=param_theano)
         mcts_player = MCTSPlayer(best_policy.policy_value_fn,
                                  c_puct=5,
                                  n_playout=400)  # set larger n_playout for better performance

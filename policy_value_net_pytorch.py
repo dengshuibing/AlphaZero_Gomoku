@@ -12,7 +12,11 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
+from collections import OrderedDict
 
+keys = ['conv1.weight' ,'conv1.bias' ,'conv2.weight' ,'conv2.bias' ,'conv3.weight' ,'conv3.bias' ,
+        'act_conv1.weight' ,'act_conv1.bias' ,'act_fc1.weight' ,'act_fc1.bias' ,
+        'val_conv1.weight' ,'val_conv1.bias' ,'val_fc1.weight' ,'val_fc1.bias' ,'val_fc2.weight' ,'val_fc2.bias']
 
 def set_learning_rate(optimizer, lr):
     """Sets the learning rate to the given value"""
@@ -60,7 +64,7 @@ class Net(nn.Module):
 class PolicyValueNet():
     """policy-value network """
     def __init__(self, board_width, board_height,
-                 model_file=None, use_gpu=False):
+                 model_file=None, use_gpu=True, param_theano=None):
         self.use_gpu = use_gpu
         self.board_width = board_width
         self.board_height = board_height
@@ -76,6 +80,16 @@ class PolicyValueNet():
         if model_file:
             net_params = torch.load(model_file)
             self.policy_value_net.load_state_dict(net_params)
+        else:
+            param_pytorch = OrderedDict()
+            for key, value in zip(keys, param_theano):
+                if 'fc' in key and 'weight' in key:
+                    param_pytorch[key] = torch.FloatTensor(value.T)
+                elif 'conv' in key and 'weight' in key:
+                    param_pytorch[key] = torch.FloatTensor(value[:,:,::-1,::-1].copy())
+                else:
+                    param_pytorch[key] = torch.FloatTensor(value)
+            self.policy_value_net.load_state_dict(param_pytorch)
 
     def policy_value(self, state_batch):
         """
@@ -145,9 +159,9 @@ class PolicyValueNet():
         entropy = -torch.mean(
                 torch.sum(torch.exp(log_act_probs) * log_act_probs, 1)
                 )
-        return loss.data[0], entropy.data[0]
+        # return loss.data[0], entropy.data[0]
         #for pytorch version >= 0.5 please use the following line instead.
-        #return loss.item(), entropy.item()
+        return loss.item(), entropy.item()
 
     def get_policy_param(self):
         net_params = self.policy_value_net.state_dict()
