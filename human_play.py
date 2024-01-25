@@ -41,6 +41,17 @@ class Human(object):
             print("invalid move")
             move = self.get_action(board)
         return move
+    
+    def play(self, board, location):
+        try:
+            if isinstance(location, str):  # for python3
+                location = [int(n, 10) for n in location.split(",")]
+            move = board.location_to_move(location)
+        except Exception as e:
+            move = -1
+        if move == -1 or move not in board.availables:
+            print("invalid move")
+        return move
 
     def __str__(self):
         return "Human {}".format(self.player)

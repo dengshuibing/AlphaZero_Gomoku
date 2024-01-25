@@ -17,6 +17,7 @@ class Board(object):
         # key: move as location on the board,
         # value: player as pieces type
         self.states = {}
+        self.state_shapes = np.zeros((self.width,self.height),dtype=int)
         # need how many pieces in a row to win
         self.n_in_row = int(kwargs.get('n_in_row', 5))
         self.players = [1, 2]  # player1 and player2
@@ -76,6 +77,8 @@ class Board(object):
 
     def do_move(self, move):
         self.states[move] = self.current_player
+        row, col = self.move_to_location(move)
+        self.state_shapes[row][col] = self.current_player
         self.availables.remove(move)
         self.current_player = (
             self.players[0] if self.current_player == self.players[1]
@@ -186,6 +189,28 @@ class Game(object):
                     else:
                         print("Game end. Tie")
                 return winner
+    
+    def start_play_api(self, player1, player2, start_player=0):
+        """start a game between two players"""
+        if start_player not in (0, 1):
+            raise Exception('start_player should be either 0 (player1 first) '
+                            'or 1 (player2 first)')
+        self.board.init_board(start_player)
+        p1, p2 = self.board.players
+        player1.set_player_ind(p1)
+        player2.set_player_ind(p2)
+        players = {p1: player1, p2: player2}
+
+        current_player = self.board.get_current_player()
+        player_in_turn = players[current_player]
+        move = player_in_turn.get_action(self.board)
+        self.board.do_move(move)
+        
+        end, winner = self.board.game_end()
+        if end:
+            return winner
+        else:
+            return self.board.states
 
     def start_self_play(self, player, is_shown=0, temp=1e-3):
         """ start a self-play game using a MCTS player, reuse the search tree,
