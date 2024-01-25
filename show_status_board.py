@@ -245,7 +245,7 @@ def draw_state2():
             # res_img = draw_point(board,(max_x,max_y))
 
             # 0 未下子 1 黑子 2 白子
-            player = state[i][j]
+            player = state[j][i]
 
             if player == 1:
                 # 画黑棋子

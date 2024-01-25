@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-im_bgr = cv2.imread('./res/board1.jpg') # 原始的彩色图像文件，BGR模式
+im_bgr = cv2.imread('./res/camer_board.jpg') # 原始的彩色图像文件，BGR模式
 im_gray = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2GRAY) # 转灰度图像
 im_gray = cv2.GaussianBlur(im_gray, (3,3), 0) # 灰度图像滤波降噪
 im_edge = cv2.Canny(im_gray, 30, 50) # 边缘检测获得边缘图像
