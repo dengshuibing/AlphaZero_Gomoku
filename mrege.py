@@ -68,7 +68,7 @@ def resize_image(image,new_size):
 
 if __name__ == '__main__':
     # 定义图像路径
-    img_jpg_path = './res/board1.jpg' # 读者可自行修改文件路径
+    img_jpg_path = './res/board_8.png' # 读者可自行修改文件路径
     img_png_path = './res/black.png' # 读者可自行修改文件路径
  
     # 读取图像

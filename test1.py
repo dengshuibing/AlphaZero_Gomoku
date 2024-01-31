@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 
+#识别棋盘上的 圆和叉
+
 # 读取图像
-img = cv2.imread('./res/go_screenshot_25.01.2024.png', cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('./res/temp.jpg', cv2.IMREAD_GRAYSCALE)
 
 # 检测圆
 # circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=20, minRadius=5, maxRadius=30)
@@ -157,29 +159,30 @@ if __name__ == "__main__":
 
     # print_area(circle_contours)
 
-    filter_similar_contours = get_max_contours_in_similar(circle_contours,0.3)
+    # filter_similar_contours = get_max_contours_in_similar(circle_contours,0.3)
 
-    print(len(circle_contours))
+    # print(len(circle_contours))
     # print_area(circle_contours)
 
     img_bgr = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
 
     cv2.drawContours(img_bgr, circle_contours, -1, (0, 0, 255), 1)
+    cv2.drawContours(img_bgr, cross_contours, -1, (0, 0, 255), 1)
 
-    for contour in circle_contours:
-        # 计算轮廓的矩
-        M = cv2.moments(contour)
+    # for contour in circle_contours:
+    #     # 计算轮廓的矩
+    #     M = cv2.moments(contour)
 
-        # 计算中心点坐标
-        if M["m00"] != 0:
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
-        else:
-            cX, cY = 0, 0
+    #     # 计算中心点坐标
+    #     if M["m00"] != 0:
+    #         cX = int(M["m10"] / M["m00"])
+    #         cY = int(M["m01"] / M["m00"])
+    #     else:
+    #         cX, cY = 0, 0
 
-        print(f"center point:{cX,cY}")
-        # 在图像上绘制中心点
-        cv2.circle(img_bgr, (cX, cY), 5, (0, 255, 0), -1)
+    #     print(f"center point:{cX,cY}")
+    #     # 在图像上绘制中心点
+    #     cv2.circle(img_bgr, (cX, cY), 5, (0, 255, 0), -1)
 
     # 显示图像
     cv2.imshow('Detected Circles and Crosses', img_bgr)

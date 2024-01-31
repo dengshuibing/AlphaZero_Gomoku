@@ -5,6 +5,9 @@
 
 from __future__ import print_function
 import numpy as np
+from mqtt import send_message_to_topic, DBManager
+import logging
+from config import HOST
 
 
 class Board(object):
@@ -22,11 +25,11 @@ class Board(object):
         self.n_in_row = int(kwargs.get('n_in_row', 5))
         self.players = [1, 2]  # player1 and player2
 
-    def init_board(self, start_player=0):
+    def init_board(self, start_player=2):
         if self.width < self.n_in_row or self.height < self.n_in_row:
             raise Exception('board width and height can not be '
                             'less than {}'.format(self.n_in_row))
-        self.current_player = self.players[start_player]  # start player
+        self.current_player = self.players[start_player-1]  # start player
         # keep available moves in a list
         self.availables = list(range(self.width * self.height))
         self.states = {}
@@ -77,8 +80,8 @@ class Board(object):
 
     def do_move(self, move):
         self.states[move] = self.current_player
-        row, col = self.move_to_location(move)
-        self.state_shapes[row][col] = self.current_player
+        h, w = self.move_to_location(move)
+        self.state_shapes[self.height-h-1][w] = self.current_player
         self.availables.remove(move)
         self.current_player = (
             self.players[0] if self.current_player == self.players[1]
@@ -190,11 +193,11 @@ class Game(object):
                         print("Game end. Tie")
                 return winner
     
-    def start_play_api(self, player1, player2, start_player=0):
+    def start_play_api(self, player1, player2, deviceid, topic, start_player=2):
         """start a game between two players"""
-        if start_player not in (0, 1):
-            raise Exception('start_player should be either 0 (player1 first) '
-                            'or 1 (player2 first)')
+        if start_player not in (1, 2):
+            raise Exception('start_player should be either 1 (player1 first) '
+                            'or 2 (player2 first)')
         self.board.init_board(start_player)
         p1, p2 = self.board.players
         player1.set_player_ind(p1)
@@ -202,9 +205,29 @@ class Game(object):
         players = {p1: player1, p2: player2}
 
         current_player = self.board.get_current_player()
+        # current_player 1 人类， 2 机器
         player_in_turn = players[current_player]
-        move = player_in_turn.get_action(self.board)
-        self.board.do_move(move)
+        if current_player == 2:
+            move = player_in_turn.get_action(self.board)
+            self.board.do_move(move)
+
+            #发送 绘画指令
+            arg = str(move+1)
+            if move+1 < 9:
+                arg = '0'+str(move+1)
+            push_json = {
+                'type': 2,
+                'deviceid': deviceid,
+                'message': {
+                    'arg': "abcdef"+arg,
+                    'url': HOST + '/dat/' + '8_8_board_res/' + "abcdef"+arg
+                }
+            }
+
+            logging.info(push_json)
+            code = send_message_to_topic(topic,push_json)
+            logging.info(f"mqtt send sucess: {code}")
+
         
         end, winner = self.board.game_end()
         if end:
@@ -246,3 +269,6 @@ class Game(object):
                     else:
                         print("Game end. Tie")
                 return winner, zip(states, mcts_probs, winners_z)
+
+
+
