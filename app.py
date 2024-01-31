@@ -271,6 +271,17 @@ def testDat():
     })
 
 
+@server.route('/mqtt/end', methods=['GET'])
+def end():
+    #清除状态
+    board.clean_state()
+
+    return jsonify({
+        "code": '0',
+        "msg":"sucess"
+    })
+
+
 def map_to_json(intMap):
      # 手动转换不可序列化对象
     return {str(key):str(value) for key, value in intMap.items()}

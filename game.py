@@ -25,6 +25,10 @@ class Board(object):
         self.n_in_row = int(kwargs.get('n_in_row', 5))
         self.players = [1, 2]  # player1 and player2
 
+    def clean_state(self):
+        self.states = {}
+        self.state_shapes = np.zeros((self.width,self.height),dtype=int)
+
     def init_board(self, start_player=2):
         if self.width < self.n_in_row or self.height < self.n_in_row:
             raise Exception('board width and height can not be '
