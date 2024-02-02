@@ -45,10 +45,11 @@ deviceid = None
 conn = DBManager()
 
 # 机器 画叉，人类 画圈
-@server.route('/start')
+@server.route('/start', methods=['POST'])
 def start():
     global deviceid
-    deviceid = request.form.get('deviceid')
+    # deviceid = request.form.get('deviceid')
+    deviceid = request.headers.get('deviceid')
     if not deviceid:
         return jsonify({
             "msg":'params error'
@@ -72,7 +73,13 @@ def start():
 #接口下棋
 @server.route('/humanPlay', methods=['POST'])
 def humanPlay():
-    position = request.form.get('position',None)
+    # position = request.form.get('position',None)
+    position = request.headers.get('position')
+
+    if not position:
+        return jsonify({
+            "msg":'params error'
+        })
 
     move = human.play(board,position)
     board.do_move(move)
@@ -117,6 +124,7 @@ def getHumanPlay():
 
     # 使用 OpenCV 解码二进制数据为图像
     im_bgr = cv2.imdecode(binary_array, cv2.IMREAD_COLOR)
+    cv2.imwrite('res/temp_origin.jpg',im_bgr)
     states = get_state_from_image(im_bgr)
 
     # 将图片所见状态，转换为程序输入状态
@@ -271,7 +279,7 @@ def testDat():
     })
 
 
-@server.route('/mqtt/end', methods=['GET'])
+@server.route('/end', methods=['GET'])
 def end():
     #清除状态
     board.clean_state()
