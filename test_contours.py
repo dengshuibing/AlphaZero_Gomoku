@@ -5,7 +5,7 @@ import numpy as np
 board_shape = 8
 padding = 10
 
-im_bgr = cv2.imread('res/temp_board.jpg', cv2.IMREAD_COLOR)  # 彩色图像
+im_bgr = cv2.imread('temp/temp_board.jpg', cv2.IMREAD_COLOR)  # 彩色图像
 
 def _find_chessboard(im_edge):
     contours, hierarchy = cv2.findContours(im_edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # 提取轮廓

@@ -223,8 +223,8 @@ class Game(object):
                 'type': 2,
                 'deviceid': deviceid,
                 'message': {
-                    'arg': "abcdef"+arg,
-                    'url': HOST + '/dat/' + '8_8_board_res/' + "abcdef"+arg
+                    'arg': "bw"+arg,
+                    'url': HOST + '/dat/' + '8_8_board_bw/' + "bw"+arg
                 }
             }
 

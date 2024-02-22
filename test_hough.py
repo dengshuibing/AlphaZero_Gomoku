@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # 读取图片
-image = cv2.imread('res/temp_board.jpg', cv2.IMREAD_COLOR)
+image = cv2.imread('temp/temp_board.jpg', cv2.IMREAD_COLOR)
 
 # 转换为灰度图像
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

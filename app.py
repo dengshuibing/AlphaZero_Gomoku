@@ -12,6 +12,7 @@ import json
 from config import HOST
 from mqtt import send_message_to_topic, DBManager
 import cv2
+from go import GoPhase
 
 server = Flask(__name__,static_url_path='')
 
@@ -98,8 +99,8 @@ def humanPlay():
         'type': 2,
         'deviceid': deviceid,
         'message': {
-            'arg': "abcdef"+arg,
-            'url': HOST + '/dat/' + '8_8_board_res/' + "abcdef"+arg
+            'arg': "bw"+arg,
+            'url': HOST + '/dat/' + '8_8_board_bw/' + "bw"+arg
         }
     }
     
@@ -124,8 +125,14 @@ def getHumanPlay():
 
     # 使用 OpenCV 解码二进制数据为图像
     im_bgr = cv2.imdecode(binary_array, cv2.IMREAD_COLOR)
-    cv2.imwrite('res/temp_origin.jpg',im_bgr)
-    states = get_state_from_image(im_bgr)
+    # cv2.imwrite('temp/temp_origin.jpg',im_bgr)
+    # 圈叉
+    # states = get_state_from_image(im_bgr)
+    # 黑白
+    # go = GoPhase('temp/temp_origin.jpg')
+    # states = go.phase
+    cv2.imwrite('temp/im_bgr.jpg',im_bgr)
+    states = get_state_from_image_bw(im_bgr)
 
     # 将图片所见状态，转换为程序输入状态
     rotated_states_180 = np.rot90(states, k=2)
@@ -153,8 +160,8 @@ def getHumanPlay():
         'type': 2,
         'deviceid': deviceid,
         'message': {
-            'arg': "abcdef"+arg,
-            'url': HOST + '/dat/' + '8_8_board_res/' + "abcdef"+arg
+            'arg': "bw"+arg,
+            'url': HOST + '/dat/' + '8_8_board_bw/' + "bw"+arg
         }
     }
 
@@ -178,12 +185,19 @@ def getImageStates():
 
     # 使用 OpenCV 解码二进制数据为图像
     im_bgr = cv2.imdecode(binary_array, cv2.IMREAD_COLOR)  # 彩色图像
-    states = get_state_from_image(im_bgr)
+    # cv2.imwrite('temp/temp_origin.jpg',im_bgr)
+    # 圈叉
+    # states = get_state_from_image(im_bgr)
+    # 黑白
+    # go = GoPhase('temp/temp_origin.jpg')
+    # states = go.phase
+    cv2.imwrite('temp/im_bgr.jpg',im_bgr)
+    states = get_state_from_image_bw(im_bgr)
 
     res = {
         'success':True,
         'data':{
-            "imageStates" : states.tolist(),
+            "imageStates" : states.tolist(), 
         }
     }
     return jsonify(res)
@@ -261,8 +275,8 @@ def testDat():
         'type': 2,
         'deviceid': deviceid,
         'message': {
-            'arg': "abcdef"+arg,
-            'url': HOST + '/dat/' + '8_8_board_res/' + "abcdef"+arg
+            'arg': "bw"+arg,
+            'url': HOST + '/dat/' + '8_8_board_bw/' + "bw"+arg
         }
     }
 
@@ -429,6 +443,9 @@ def get_state(shape,board_state,points,type):
     return board_state
 
 # 输入一个点 获取 棋盘坐标位置
+#   1 2 3
+#   4 5 6
+#   7 8 9
 def get_location_by_point(center_point,start_point,end_point):
     location_x = -1
     location_y = -1
@@ -492,11 +509,11 @@ def get_state_from_image(im_bgr):
     boxes = orderPoints(np.float32(rect))
     #得到只有棋盘的图片
     img_bgr = warpImage(im_bgr,boxes)
-    cv2.imwrite("res/temp_board.jpg",img_bgr)
+    cv2.imwrite("temp/temp_board.jpg",img_bgr)
     h,w = img_bgr.shape[:2]
 
     # 寻找所有轮廓
-    img_bgr = cv2.imread('res/temp_board.jpg', cv2.IMREAD_COLOR)  # 彩色图像
+    img_bgr = cv2.imread('temp/temp_board.jpg', cv2.IMREAD_COLOR)  # 彩色图像
     img_gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY) # 转灰度图像
     img_gray = cv2.GaussianBlur(img_gray, (3,3), 0) # 灰度图像滤波降噪
     img_edge = cv2.Canny(img_gray, 30, 50) # 边缘检测获得边缘图像
@@ -505,7 +522,7 @@ def get_state_from_image(im_bgr):
     # 画出所有轮廓
     img_all = np.copy(img_bgr)
     cv2.drawContours(img_all, contours, -1, (0, 0, 255), 2)
-    cv2.imwrite("res/temp_all.jpg",img_all)
+    cv2.imwrite("temp/temp_all.jpg",img_all)
 
     # 初始化棋盘状态
     states = init_state(board_shape=board_shape)
@@ -518,7 +535,7 @@ def get_state_from_image(im_bgr):
     points = get_circle_point(img_edge)
     for point in points:#画圆心
         img_circle = draw_point(img_circle,point)
-    cv2.imwrite("res/temp_circle.jpg",img_circle)
+    cv2.imwrite("temp/temp_circle.jpg",img_circle)
     states = get_state((h,w),states,points,1)
     
     # 找到叉叉
@@ -528,10 +545,74 @@ def get_state_from_image(im_bgr):
     cv2.drawContours(img_cross, cross_contours, -1, (0, 0, 255), 2)#画叉
     for point in points:#画叉的中心
         img_cross = draw_point(img_cross,point)
-    cv2.imwrite("res/temp_cross.jpg",img_cross)
+    cv2.imwrite("temp/temp_cross.jpg",img_cross)
     states = get_state((h,w),states,points,2)
 
     return states
+
+# 从 图片中获取状态 黑白棋子
+def get_state_from_image_bw(im_bgr):
+    im_gray = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2GRAY) # 转灰度图像
+    im_gray = cv2.GaussianBlur(im_gray, (3,3), 0) # 灰度图像滤波降噪
+    cv2.imwrite("temp/im_gray.jpg",im_gray)
+    im_edge = cv2.Canny(im_gray, 30, 50) # 边缘检测获得边缘图像
+    cv2.imwrite("temp/im_edge.jpg",im_edge)
+
+    board_gray = None # 棋盘灰度图
+    board_bgr = None # 棋盘彩色图
+    board_edge = None # 棋盘边缘图
+    rect = None # 棋盘四个角的坐标，顺序为lt/lb/rt/rb
+    phase = None # 用以表示围棋局面的二维数组
+
+    """找到棋盘"""
+    rect = _find_chessboard(im_edge)
+    boxes = orderPoints(np.float32(rect))
+    #得到只有棋盘的图片
+    board_gray = warpImage(im_gray,boxes)
+    cv2.imwrite("temp/board_gray.jpg",board_gray)
+    board_bgr = warpImage(im_bgr,boxes)
+    cv2.imwrite("temp/board_bgr.jpg",board_bgr)
+    board_edge = warpImage(im_edge,boxes)
+    cv2.imwrite("temp/board_edge.jpg",board_edge)
+
+    h,w = board_bgr.shape[:2]
+
+
+    """识别棋子"""
+    points = get_circle_point(board_edge)
+    # for point in points:#画圆心
+    #     board_bgr = draw_point(board_bgr,point)
+    # cv2.imwrite("temp/board_bgr_cirlce.jpg",board_bgr)
+
+    """获取棋盘状态"""
+    states = init_state(board_shape=board_shape)
+    board_bgr = cv2.imread('temp/board_bgr.jpg', cv2.IMREAD_COLOR)
+
+    for point in points:
+        row = point[1]
+        col = point[0]
+        
+        bgr_ = board_bgr[row-5:row+5, col-5:col+5]
+        cv2.imwrite("temp/board_bgr_cirlce_temp.jpg",bgr_)
+
+        board_bgr = draw_point(board_bgr,point)
+        cv2.imwrite("temp/board_bgr_cirlce.jpg",board_bgr)
+
+        b = np.mean(bgr_[:,:,0])
+        g = np.mean(bgr_[:,:,1])
+        r = np.mean(bgr_[:,:,2])
+
+        location = get_location_by_point((col, row),(0,0),(w-1,h-1))
+        print(f"location(x:{location[0]},y:{location[1]})")
+
+        total = b + g + r
+        if total < 151:
+            states[location[1]][location[0]] = 1 # 黑棋
+        else:
+            states[location[1]][location[0]] = 2 # 蓝棋
+
+    return states
+
 
 def get_last_play(pre_states,next_states):
     pre = pre_states.flatten()
@@ -581,6 +662,7 @@ def get_circle_point(edge_img):
             points.append((i[0], i[1]))
     return points
 
+# def write_text:
 
 if __name__ == '__main__':
     server.run(host='0.0.0.0',port=5003)
