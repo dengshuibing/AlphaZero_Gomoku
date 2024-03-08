@@ -78,7 +78,7 @@ def run():
         #     policy_param = pickle.load(open(model_file, 'rb'),
         #                                encoding='bytes')  # To support python3
 
-        param_theano = pickle.load(open('best_policy_8_8_5.model', 'rb'),encoding='bytes')
+        param_theano = pickle.load(open('./model/best_policy_8_8_5.model', 'rb'),encoding='bytes')
         best_policy = PolicyValueNet(width, height, param_theano=param_theano)
         mcts_player = MCTSPlayer(best_policy.policy_value_fn,
                                  c_puct=5,

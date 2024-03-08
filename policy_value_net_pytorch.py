@@ -80,7 +80,7 @@ class PolicyValueNet():
         if model_file:
             net_params = torch.load(model_file)
             self.policy_value_net.load_state_dict(net_params)
-        else:
+        if param_theano:
             param_pytorch = OrderedDict()
             for key, value in zip(keys, param_theano):
                 if 'fc' in key and 'weight' in key:
