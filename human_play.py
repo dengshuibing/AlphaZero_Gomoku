@@ -59,8 +59,8 @@ class Human(object):
 
 def run():
     n = 5
-    width, height = 8, 8
-    model_file = 'best_policy_8_8_5.model'
+    width, height = 14, 14
+    model_file = './model/best_policy_14_14_5.model'
     try:
         board = Board(width=width, height=height, n_in_row=n)
         game = Game(board)
@@ -68,8 +68,8 @@ def run():
         # ############### human VS AI ###################
         # load the trained policy_value_net in either Theano/Lasagne, PyTorch or TensorFlow
 
-        # best_policy = PolicyValueNet(width, height, model_file = model_file)
-        # mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)
+        best_policy = PolicyValueNet(width, height, model_file = model_file)
+        mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)
 
         # load the provided model (trained in Theano/Lasagne) into a MCTS player written in pure numpy
         # try:
@@ -78,11 +78,11 @@ def run():
         #     policy_param = pickle.load(open(model_file, 'rb'),
         #                                encoding='bytes')  # To support python3
 
-        param_theano = pickle.load(open('./model/best_policy_8_8_5.model', 'rb'),encoding='bytes')
-        best_policy = PolicyValueNet(width, height, param_theano=param_theano)
-        mcts_player = MCTSPlayer(best_policy.policy_value_fn,
-                                 c_puct=5,
-                                 n_playout=400)  # set larger n_playout for better performance
+        # param_theano = pickle.load(open('./model/best_policy_14_14_5.model', 'rb'),encoding='bytes')
+        # best_policy = PolicyValueNet(width, height, param_theano=param_theano)
+        # mcts_player = MCTSPlayer(best_policy.policy_value_fn,
+        #                          c_puct=5,
+        #                          n_playout=400)  # set larger n_playout for better performance
 
         # uncomment the following line to play with pure MCTS (it's much weaker even with a larger n_playout)
         # mcts_player = MCTS_Pure(c_puct=5, n_playout=1000)
