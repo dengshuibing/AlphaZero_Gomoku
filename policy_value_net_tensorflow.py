@@ -7,7 +7,9 @@ Tested in Tensorflow 1.4 and 1.5
 """
 
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
+import tensorflow._api.v2.compat.v1 as tf
+tf.disable_v2_behavior()
 
 
 class PolicyValueNet():
@@ -87,7 +89,9 @@ class PolicyValueNet():
                 learning_rate=self.learning_rate).minimize(self.loss)
 
         # Make a session
-        self.session = tf.Session()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        self.session = tf.Session(config=config)
 
         # calc policy entropy, for monitoring only
         self.entropy = tf.negative(tf.reduce_mean(
