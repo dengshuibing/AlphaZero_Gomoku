@@ -1,0 +1,3 @@
+n_playout = 400
+game_batch_num = 1500
+pure_mcts_playout_num < 5000

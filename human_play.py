@@ -60,7 +60,7 @@ class Human(object):
 def run():
     n = 5
     width, height = 14, 14
-    model_file = './model/best_policy_14_14_5.model'
+    model_file = './model/best_policy_14_14_5.model2'
     try:
         board = Board(width=width, height=height, n_in_row=n)
         game = Game(board)
