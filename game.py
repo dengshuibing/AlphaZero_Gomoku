@@ -224,11 +224,12 @@ class Game(object):
                 'deviceid': deviceid,
                 'message': {
                     'arg': "bwa"+arg,
-                    'url': HOST + '/dat/' + '8_8_board_bw/' + "bwa"+arg
+                    'url': HOST + '/dat/' + '14_14_board_res/' + "bwa"+arg
                 }
             }
 
             logging.info(push_json)
+            print(push_json)
             code = send_message_to_topic(topic,push_json)
             logging.info(f"mqtt send sucess: {code}")
 
