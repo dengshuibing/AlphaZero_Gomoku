@@ -132,7 +132,11 @@ def getHumanPlay():
     # go = GoPhase('temp/temp_origin.jpg')
     # states = go.phase
     cv2.imwrite('temp/im_bgr.jpg',im_bgr)
-    states = get_state_from_image_bw(im_bgr)
+
+    #切图像
+    cropped = im_bgr[int(im_bgr.shape[0]*0.01):int(im_bgr.shape[0]*0.70),int(im_bgr.shape[1]*0.05):int(im_bgr.shape[1]*0.70)]
+    cv2.imwrite('temp/im_bgr_cropped.jpg',cropped)
+    states = get_state_from_image_bw(cropped)
 
     # 将图片所见状态，转换为程序输入状态
     rotated_states_180 = np.rot90(states, k=2)
@@ -192,7 +196,11 @@ def getImageStates():
     # go = GoPhase('temp/temp_origin.jpg')
     # states = go.phase
     cv2.imwrite('temp/im_bgr.jpg',im_bgr)
-    states = get_state_from_image_bw(im_bgr)
+
+    #切图像
+    cropped = im_bgr[int(im_bgr.shape[0]*0.01):int(im_bgr.shape[0]*0.70),int(im_bgr.shape[1]*0.05):int(im_bgr.shape[1]*0.70)]
+    cv2.imwrite('temp/im_bgr_cropped.jpg',cropped)
+    states = get_state_from_image_bw(cropped)
 
     res = {
         'success':True,
