@@ -1,2 +1,5 @@
 *.pyc
 __pycache__/
+temp/
+*.log
+static/dat/14_14_board_res
