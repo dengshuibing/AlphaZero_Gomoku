@@ -33,7 +33,7 @@ class TrainPipeline():
         self.learn_rate = 2e-3
         self.lr_multiplier = 1.0  # adaptively adjust the learning rate based on KL
         self.temp = 1.0  # the temperature param
-        self.n_playout = 1200  # num of simulations for each move
+        self.n_playout = 6400  # num of simulations for each move
         self.c_puct = 5
         self.buffer_size = 10000
         self.batch_size = 512  # mini-batch size for training
@@ -42,7 +42,7 @@ class TrainPipeline():
         self.epochs = 5  # num of train_steps for each update
         self.kl_targ = 0.02
         self.check_freq = 50
-        self.game_batch_num = 3000
+        self.game_batch_num = 6000
         self.best_win_ratio = 0.0
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
@@ -85,6 +85,7 @@ class TrainPipeline():
 
     def collect_selfplay_data(self, n_games=1):
         """collect self-play data for training"""
+        time_start=time.time()
         for i in range(n_games):
             winner, play_data = self.game.start_self_play(self.mcts_player,
                                                           temp=self.temp)
@@ -93,9 +94,12 @@ class TrainPipeline():
             # augment the data
             play_data = self.get_equi_data(play_data)
             self.data_buffer.extend(play_data)
+        time_end=time.time()
+        print('collect selfplay data n_games: '+n_games+', time cost ',time_end-time_start,' s')
 
     def policy_update(self):
         """update the policy-value net"""
+        time_start=time.time()
         mini_batch = random.sample(self.data_buffer, self.batch_size)
         state_batch = [data[0] for data in mini_batch]
         mcts_probs_batch = [data[1] for data in mini_batch]
@@ -126,18 +130,21 @@ class TrainPipeline():
         explained_var_new = (1 -
                              np.var(np.array(winner_batch) - new_v.flatten()) /
                              np.var(np.array(winner_batch)))
+        time_end=time.time()
         print(("kl:{:.5f},"
                "lr_multiplier:{:.3f},"
                "loss:{},"
                "entropy:{},"
                "explained_var_old:{:.3f},"
-               "explained_var_new:{:.3f}"
+               "explained_var_new:{:.3f},"
+               "cost time:{:.3f}"
                ).format(kl,
                         self.lr_multiplier,
                         loss,
                         entropy,
                         explained_var_old,
-                        explained_var_new))
+                        explained_var_new,
+                        time_end-time_start))
         return loss, entropy
 
     def policy_evaluate(self, n_games=10):
@@ -171,6 +178,7 @@ class TrainPipeline():
         """run the training pipeline"""
         try:
             for i in range(self.game_batch_num):
+                time_start=time.time()
                 self.collect_selfplay_data(self.play_batch_size)
                 print("batch i:{}, episode_len:{}".format(
                         i+1, self.episode_len))
@@ -180,21 +188,23 @@ class TrainPipeline():
                 # and save the model params
                 if (i+1) % self.check_freq == 0:
                     print("current self-play batch: {}".format(i+1))
-                    win_ratio = self.policy_evaluate()
-                    self.policy_value_net.save_model('./current_policy.model')
-                    if win_ratio > self.best_win_ratio:
-                        print("New best policy!!!!!!!!")
-                        self.best_win_ratio = win_ratio
-                        # update the best_policy
-                        self.policy_value_net.save_model('./best_policy.model')
-                        if (self.best_win_ratio == 1.0 and
-                                self.pure_mcts_playout_num < 10000):
-                            self.pure_mcts_playout_num += 1000
-                            self.best_win_ratio = 0.0
+                    # win_ratio = self.policy_evaluate()
+                    self.policy_value_net.save_model('./temp/current_policy_'+str(i+1)+'.model')
+                    # if win_ratio > self.best_win_ratio:
+                    #     print("New best policy!!!!!!!!")
+                    #     self.best_win_ratio = win_ratio
+                    #     # update the best_policy
+                    #     self.policy_value_net.save_model('./best_policy.model')
+                    #     if (self.best_win_ratio == 1.0 and
+                    #             self.pure_mcts_playout_num < 20000):
+                    #         self.pure_mcts_playout_num += 1000
+                    #         self.best_win_ratio = 0.0
+                time_end=time.time()
+                print('game batch '+str(i+1)+' time cost ',time_end-time_start,' s')
         except KeyboardInterrupt:
             print('\n\rquit')
 
 
 if __name__ == '__main__':
-    training_pipeline = TrainPipeline()
+    training_pipeline = TrainPipeline(init_model='./model/best_policy_14_14_5.model2')
     training_pipeline.run()
