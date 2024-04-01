@@ -6,7 +6,7 @@ from game import Board, Game
 from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 import pickle
 
-n_playout = 6400  # num of simulations for each move
+n_playout = 1200  # num of simulations for each move
 c_puct = 5
 # num of simulations used for the pure mcts, which is used as
 # the opponent to evaluate the trained policy

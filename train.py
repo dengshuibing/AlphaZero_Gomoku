@@ -33,7 +33,7 @@ class TrainPipeline():
         self.learn_rate = 2e-3
         self.lr_multiplier = 1.0  # adaptively adjust the learning rate based on KL
         self.temp = 1.0  # the temperature param
-        self.n_playout = 6400  # num of simulations for each move
+        self.n_playout = 1200  # num of simulations for each move
         self.c_puct = 5
         self.buffer_size = 10000
         self.batch_size = 512  # mini-batch size for training
@@ -95,7 +95,7 @@ class TrainPipeline():
             play_data = self.get_equi_data(play_data)
             self.data_buffer.extend(play_data)
         time_end=time.time()
-        print('collect selfplay data n_games: '+n_games+', time cost ',time_end-time_start,' s')
+        print('collect selfplay data n_games: '+str(n_games)+', time cost ',time_end-time_start,' s')
 
     def policy_update(self):
         """update the policy-value net"""
