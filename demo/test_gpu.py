@@ -7,12 +7,12 @@ import multiprocessing
 
 
 n_cpu = multiprocessing.cpu_count()
-print(n_cpu)
+# print(n_cpu)
 
 gpu_device_name = tf.test.gpu_device_name()
 print(gpu_device_name)
-tf.config.list_physical_devices('GPU')
+# tf.config.list_physical_devices('GPU')
 
 
 
-print(tf.__version__)
+# print(tf.__version__)
