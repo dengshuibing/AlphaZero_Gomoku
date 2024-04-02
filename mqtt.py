@@ -45,7 +45,7 @@ def send_message_to_topic(topic: str, push_dict: dict)->int:
     """
     push_body = str.encode(json.dumps(push_dict))
     # 初始化MQTT
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+    client = mqtt.Client()
     client.username_pw_set(username=MQTT_USERNAME, password=MQTT_PASSWORD)
     client.connect(MQTT_HOST, MQTT_PORT)
 

@@ -196,9 +196,9 @@ def getImageStates():
     # states = go.phase
     cv2.imwrite('temp/im_bgr.jpg',im_bgr)
     #切图像
-    cropped = im_bgr[int(im_bgr.shape[0]*0.20):int(im_bgr.shape[0]*0.90),int(im_bgr.shape[1]*0.25):int(im_bgr.shape[1]*0.90)]
-    cv2.imwrite('temp/im_bgr_cropped.jpg',cropped)
-    states = get_state_from_image_bw(cropped)
+    # cropped = im_bgr[int(im_bgr.shape[0]*0.20):int(im_bgr.shape[0]*0.90),int(im_bgr.shape[1]*0.25):int(im_bgr.shape[1]*0.90)]
+    # cv2.imwrite('temp/im_bgr_cropped.jpg',cropped)
+    states = get_state_from_image_bw(im_bgr)
 
     res = {
         'success':True,
