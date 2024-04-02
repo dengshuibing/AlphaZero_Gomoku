@@ -89,7 +89,10 @@ class PolicyValueNet():
                 learning_rate=self.learning_rate).minimize(self.loss)
 
         # Make a session
-        config = tf.ConfigProto()
+        config = tf.ConfigProto(
+            inter_op_parallelism_threads = 4,
+            intra_op_parallelism_threads = 4,
+        )
         config.gpu_options.allow_growth = True
         self.session = tf.Session(config=config)
 

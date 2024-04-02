@@ -43,7 +43,7 @@ class AgentProcess(Process):
         self.game = Game(self.board)
         self.pure_mcts_playout_num=1000
 
-        print(self.game)
+        print(f"pid=={os.getpid()}=="+str(self.game))
 
 
 
@@ -69,7 +69,7 @@ class AgentProcess(Process):
             a = time.time()
             winner, play_data = self.game.start_self_play(mcts_player,
                                                           temp=self.temp, is_shown=0)
-            print(time.time() - a, 'game play')
+            print(f"pid=={os.getpid()}=="+str(time.time() - a), 'game play')
             play_data = list(play_data)[:]
             episode_len = len(play_data)
             # augment the data
@@ -133,7 +133,7 @@ class AgentProcess(Process):
             explained_var_new = (1 -
                                  np.var(np.array(winner_batch) - new_v.flatten()) /
                                  np.var(np.array(winner_batch)))
-            print(("kl:{:.5f},"
+            print(f"pid=={os.getpid()}=="+("kl:{:.5f},"
                    "lr_multiplier:{:.3f},"
                    "loss:{:.3f},"
                    "entropy:{:.3f},"
@@ -154,57 +154,61 @@ class AgentProcess(Process):
             Evaluate the trained policy by playing against the pure MCTS player
             Note: this is only for monitoring the progress of training
             """
-            print('eval')
+            print(f"pid=={os.getpid()}=="+'eval')
             current_mcts_player = MCTSPlayer(self.agent.policy_value_fn,c_puct=self.c_puct,n_playout=self.n_playout)
             pure_mcts_player = MCTS_Pure(c_puct=5, n_playout=self.pure_mcts_playout_num)
             win_cnt = defaultdict(int)
-            print('eval run')
+            print(f"pid=={os.getpid()}=="+'eval run')
             for i in range(n_games):
+                a = time.time()
                 winner = self.game.start_play(current_mcts_player,
                                               pure_mcts_player,
                                               start_player=i % 2,
                                               is_shown=0)
+                print(f"pid=={os.getpid()}== game {i} cost time:"+str(time.time() - a))
                 win_cnt[winner] += 1
             win_ratio = 1.0 * (win_cnt[1] + 0.5 * win_cnt[-1]) / n_games
-            print("num_playouts:{}, win: {}, lose: {}, tie:{}".format(
+            print(f"pid=={os.getpid()}=="+"num_playouts:{}, win: {}, lose: {}, tie:{}".format(
                 self.pure_mcts_playout_num,
                 win_cnt[1], win_cnt[2], win_cnt[-1]))
             return win_ratio
 
 
         def treatQueue():
-            print('treatQueue In ' + str(os.getpid()))
+            print(f"pid=={os.getpid()}=="+'treatQueue In ' + str(os.getpid()))
             t0 = time.time()
             try:
                 msg = self.conn.recv()
             except Exception as e:
                 msg = self.conn.recv()
 
-                print(str(e)+" "+str(self.id)+" "+str(os.getpid()))
+                print(f"pid=={os.getpid()}=="+str(e)+" "+str(self.id)+" "+str(os.getpid()))
             if msg == "load":
-                print(str(os.getpid())+' start load')
+                print(f"pid=={os.getpid()}=="+str(os.getpid())+' start load')
                 self.agent.restore_model(variables.init_model)
-                print("Process "+str(os.getpid())+" loaded the master (0) model.")
+                print(f"pid=={os.getpid()}=="+"Process "+str(os.getpid())+" loaded the master (0) model.")
 
             elif msg[0] == "collect":
                 data_buffer.extend(msg[1])
-                print(len(msg[1]), len(data_buffer))
+                print(f"pid=={os.getpid()}=="+str(len(msg[1])), str(len(data_buffer)))
 
             elif msg[0] == "train_with_batchs":
                 self.count += 1
-                print("Master process is training ... "+str(self.count))
+                print(f"pid=={os.getpid()}=="+"Master process is training ... "+str(self.count))
 
                 data_buffer.extend(msg[1])
-                print(len(msg[1]),len(data_buffer))
+                print(f"pid=={os.getpid()}=="+str(len(msg[1])),str(len(data_buffer)))
                 policy_update(data_buffer)
                 self.agent.save_model(variables.init_model)
-                print("Master process finished training. Time : "+str(time.time()-t0)+" \n")
+                print(f"pid=={os.getpid()}=="+"Master process finished training. Time : "+str(time.time()-t0)+" \n")
 
-                if self.count% variables.check_freq == 0:
-                    print("current self-play batch: {}".format(self.count))
+                if self.count% variables.check_freq == 0 and variables.is_check:
+                    print(f"pid=={os.getpid()}=="+"current self-play batch: {}".format(self.count))
+                    a = time.time()
                     win_ratio = policy_evaluate()
+                    print(f"pid=={os.getpid()}==eval time:"+str(time.time() - a))
                     if win_ratio > self.best_win_ratio:
-                        print("New best policy!!!!!!!!")
+                        print(f"pid=={os.getpid()}=="+"New best policy!!!!!!!!")
                         self.best_win_ratio = win_ratio
                         # update the best_policy
                         self.agent.save_model('./best_policy.model')
@@ -215,11 +219,11 @@ class AgentProcess(Process):
 
                 self.conn.send("saved")
 
-            print('treatQueue Out '+ str(os.getpid()))
+            print(f"pid=={os.getpid()}=="+'treatQueue Out '+ str(os.getpid()))
 
         while True:
             if self.id!= 0:
                 playdata=collect_selfplay_data()
-                print("Process "+str(self.id)+" finished playing."+str(len(playdata)))
+                print(f"pid=={os.getpid()}=="+"Process "+str(self.id)+" finished playing."+str(len(playdata)))
                 self.conn.send([self.id,playdata])
             treatQueue()

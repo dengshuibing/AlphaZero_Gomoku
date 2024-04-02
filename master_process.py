@@ -2,6 +2,7 @@ import numpy as np
 import variables
 import time
 # import tensorflow as tf
+import os
 
 
 from agent_process import AgentProcess
@@ -23,7 +24,7 @@ class MasterProcess():
         for i in range(4):
             parent_conn, child_conn = Pipe()
             pipes[i] = parent_conn
-            print(i)
+            print(f"pid=={os.getpid()}=="+str(i))
             p = AgentProcess(conn=child_conn, id=i)
             p.start()
             self.processes[i] = p
@@ -35,34 +36,34 @@ class MasterProcess():
             while True:
                 msg = pipes[id].recv()
                 if msg == "saved":
-                    print("Master process (0) saved his weights.")
+                    print(f"pid=={os.getpid()}=="+"Master process (0) saved his weights.")
                     for j in self.Dlist:
-                        print(str(j)+" processs load")
+                        print(f"pid=={os.getpid()}=="+str(j)+" processs load")
                         self.Dlist.remove(j)
                         pipes[j].send("load")
 
                 else:
-                    print(len(msg[1]),'master')
+                    print(f"pid=={os.getpid()}=="+str(len(msg[1])),'master')
                     id = msg[0]
                     self.Dlist.append(id)
-                    print(self.Dlist)
+                    print(f"pid=={os.getpid()}=="+str(self.Dlist))
                     self.data_buffer.extend(msg[1])
                     self.count+=1
-                    print(len(self.data_buffer))
+                    print(f"pid=={os.getpid()}=="+str(len(self.data_buffer)))
                     self.data=msg[1]
-                    print("Process "+str(id)+" returns ")
+                    print(f"pid=={os.getpid()}=="+"Process "+str(id)+" returns ")
                     if len(self.data_buffer)<512:
                         pipes[id].send("load")
                         pipes[0].send(["collect", msg[1]])
 
 
         threads_listen = []
-        print("Threads to start")
+        print(f"pid=={os.getpid()}=="+"Threads to start")
         for id in pipes:
             t = threading.Thread(target=listenToAgent, args=(id,))
             t.start()
             threads_listen.append(t)
-        print("Threads started")
+        print(f"pid=={os.getpid()}=="+"Threads started")
         count=0
 
         while True:
