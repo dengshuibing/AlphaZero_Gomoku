@@ -103,7 +103,7 @@ def humanPlay():
         'deviceid': deviceid,
         'message': {
             'arg': "bwa"+arg,
-            'url': HOST + '/dat/' + '8_8_board_bw/' + "bwa"+arg
+            'url': HOST + '/dat/' + '14_14_board_res/' + "bwa"+arg
         }
     }
     
@@ -168,7 +168,7 @@ def getHumanPlay():
         'deviceid': deviceid,
         'message': {
             'arg': "bwa"+arg,
-            'url': HOST + '/dat/' + '8_8_board_bw/' + "bwa"+arg
+            'url': HOST + '/dat/' + '14_14_board_res/' + "bwa"+arg
         }
     }
 
@@ -287,7 +287,7 @@ def testDat():
         'deviceid': deviceid,
         'message': {
             'arg': "bwa"+arg,
-            'url': HOST + '/dat/' + '8_8_board_bw/' + "bwa"+arg
+            'url': HOST + '/dat/' + '14_14_board_res/' + "bwa"+arg
         }
     }
 
