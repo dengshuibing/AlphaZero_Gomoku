@@ -9,6 +9,16 @@ from mqtt import send_message_to_topic, DBManager
 import logging
 from config import HOST
 
+gen_num = [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 
+           45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 
+           59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 
+           73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 
+           87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 
+           101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 
+           115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 
+           129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 
+           143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 
+           157, 158, 159, 160, 161, 162, 163, 164, 165, 166]
 
 class Board(object):
     """board for the game"""
@@ -216,9 +226,9 @@ class Game(object):
             self.board.do_move(move)
 
             #发送 绘画指令
-            arg = str(move+1)
-            if move+1 < 9:
-                arg = '0'+str(move+1)
+            arg = str(gen_num[move])
+            # if move+1 < 9:
+            #     arg = '0'+str(move+1)
             push_json = {
                 'type': 2,
                 'deviceid': deviceid,
