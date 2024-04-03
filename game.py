@@ -5,7 +5,7 @@
 
 from __future__ import print_function
 import numpy as np
-from mqtt import send_message_to_topic, DBManager
+from mqtt import send_two_message_to_topic, DBManager
 import logging
 from config import HOST
 
@@ -239,7 +239,7 @@ class Game(object):
             }
 
             logging.info(push_json)
-            code = send_message_to_topic(topic,push_json)
+            code = send_two_message_to_topic(topic,push_json)
             logging.info(f"mqtt send sucess: {code}")
 
         

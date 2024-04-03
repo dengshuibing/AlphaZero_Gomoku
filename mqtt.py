@@ -2,6 +2,8 @@ import json
 import paho.mqtt.client as mqtt
 import mysql.connector
 from config import MQTT_USERNAME, MQTT_PASSWORD, MQTT_HOST, MQTT_PORT
+from config import HOST
+import time
 
 
 class DBManager:
@@ -54,6 +56,35 @@ def send_message_to_topic(topic: str, push_dict: dict)->int:
     client.publish(topic, push_body, 1)
 
     return 0
+
+
+def send_two_message_to_topic(topic: str, push_dict: dict)->int:
+    """
+    :param topic:
+    :param push_dict: 结构
+    :return: errcode
+    """
+    deviceid = push_dict['deviceid']
+    pick_json = get_pick_loc_json(deviceid)
+
+    send_message_to_topic(topic,pick_json)
+    time.sleep(2)
+    send_message_to_topic(topic,push_dict)
+
+
+    return 0
+
+def get_pick_loc_json(deviceid):
+    pick_json = {
+        'type': 2,
+        'deviceid': deviceid,
+        'message': {
+            'arg': "bwa00",
+            'url': HOST + '/dat/' + 'pick_loc/' + "bwa00"
+        }
+    }
+
+    return pick_json
 
 
 if __name__ == "__main__":

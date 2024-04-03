@@ -11,7 +11,7 @@ from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
 from human_play import Human
 import json
 from config import HOST
-from mqtt import send_message_to_topic, DBManager
+from mqtt import send_two_message_to_topic, DBManager
 import cv2
 from go import GoPhase
 
@@ -120,7 +120,7 @@ def humanPlay():
     }
     
     logging.info(push_json)
-    code = send_message_to_topic(topic,push_json)
+    code = send_two_message_to_topic(topic,push_json)
     logging.info(f"mqtt send sucess: {code}")
 
     res = {
@@ -186,7 +186,7 @@ def getHumanPlay():
     }
 
     logging.info(push_json)
-    code = send_message_to_topic(topic,push_json)
+    code = send_two_message_to_topic(topic,push_json)
     logging.info(f"mqtt send sucess: {code}")
 
     res = {
@@ -271,7 +271,7 @@ def drawCircle():
     topic = conn.select_topic(deviceid)
     print(topic)
 
-    code = send_message_to_topic(topic,push_json)
+    code = send_two_message_to_topic(topic,push_json)
 
     return jsonify({
         "code": code,
@@ -310,7 +310,7 @@ def testDat():
     topic = conn.select_topic(deviceid)
     print(topic)
 
-    code = send_message_to_topic(topic,push_json)
+    code = send_two_message_to_topic(topic,push_json)
 
     return jsonify({
         "code": code,
@@ -677,7 +677,7 @@ def rotate_bound(image, angle):
 def get_circle_point(edge_img):
     points = []
     # 使用霍夫变换检测圆形
-    circles = cv2.HoughCircles(edge_img, cv2.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=10, maxRadius=30)
+    circles = cv2.HoughCircles(edge_img, cv2.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=10, maxRadius=40)
 
     # 如果找到圆形，则绘制出来
     if circles is not None:
