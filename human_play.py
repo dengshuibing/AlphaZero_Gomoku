@@ -14,7 +14,8 @@ from mcts_alphaZero import MCTSPlayer
 from policy_value_net_numpy import PolicyValueNetNumpy
 # from policy_value_net import PolicyValueNet  # Theano and Lasagne
 # from policy_value_net_pytorch import PolicyValueNet  # Pytorch
-from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
+# from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
+from tf_policy_value_net import PolicyValueNet # Tensorflow
 # from policy_value_net_keras import PolicyValueNet  # Keras
 
 
@@ -59,7 +60,7 @@ class Human(object):
 
 def run():
     n = 5
-    width, height = 10, 10
+    width, height = 11, 11
     model_file = 'best_policy_tensorflow_10_10_5.model'
     try:
         board = Board(width=width, height=height, n_in_row=n)
@@ -68,7 +69,8 @@ def run():
         # ############### human VS AI ###################
         # load the trained policy_value_net in either Theano/Lasagne, PyTorch or TensorFlow
 
-        best_policy = PolicyValueNet(width, height, model_file = model_file)
+        # best_policy = PolicyValueNet(width, height, model_file = model_file)
+        best_policy = PolicyValueNet(width, height, n)
         mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5, n_playout=400)
 
         # load the provided model (trained in Theano/Lasagne) into a MCTS player written in pure numpy
