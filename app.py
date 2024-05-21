@@ -198,9 +198,9 @@ def getImageStates():
     cv2.imwrite('temp/im_bgr.jpg',im_bgr)
 
     #切图像
-    cropped = im_bgr[int(im_bgr.shape[0]*0.01):int(im_bgr.shape[0]*0.70),int(im_bgr.shape[1]*0.05):int(im_bgr.shape[1]*0.70)]
-    cv2.imwrite('temp/im_bgr_cropped.jpg',cropped)
-    states = get_state_from_image_bw(cropped)
+    # cropped = im_bgr[int(im_bgr.shape[0]*0.01):int(im_bgr.shape[0]*0.70),int(im_bgr.shape[1]*0.05):int(im_bgr.shape[1]*0.70)]
+    # cv2.imwrite('temp/im_bgr_cropped.jpg',cropped)
+    states = get_state_from_image_bw(im_bgr)
 
     res = {
         'success':True,
@@ -561,9 +561,10 @@ def get_state_from_image(im_bgr):
 # 从 图片中获取状态 黑白棋子
 def get_state_from_image_bw(im_bgr):
     im_gray = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2GRAY) # 转灰度图像
-    im_gray = cv2.GaussianBlur(im_gray, (3,3), 0) # 灰度图像滤波降噪
+    im_gray = cv2.blur(im_gray, (5,5)) # 灰度图像滤波降噪
     cv2.imwrite("temp/im_gray.jpg",im_gray)
-    im_edge = cv2.Canny(im_gray, 30, 50) # 边缘检测获得边缘图像
+    # im_edge = cv2.Canny(im_gray, 30, 50) # 边缘检测获得边缘图像
+    im_edge = canny_edge(im_gray)
     cv2.imwrite("temp/im_edge.jpg",im_edge)
 
     board_gray = None # 棋盘灰度图
@@ -587,7 +588,8 @@ def get_state_from_image_bw(im_bgr):
 
 
     """识别棋子"""
-    points = get_circle_point(board_edge)
+    points = get_circle_draw(board_edge,board_bgr)
+    cv2.imwrite("temp/board_bgr.jpg",board_bgr)
     # for point in points:#画圆心
     #     board_bgr = draw_point(board_bgr,point)
     # cv2.imwrite("temp/board_bgr_cirlce.jpg",board_bgr)
@@ -603,7 +605,7 @@ def get_state_from_image_bw(im_bgr):
         bgr_ = board_bgr[row-5:row+5, col-5:col+5]
         cv2.imwrite("temp/board_bgr_cirlce_temp.jpg",bgr_)
 
-        board_bgr = draw_point(board_bgr,point)
+        # board_bgr = draw_point(board_bgr,point)
         cv2.imwrite("temp/board_bgr_cirlce.jpg",board_bgr)
 
         b = np.mean(bgr_[:,:,0])
@@ -670,6 +672,32 @@ def get_circle_point(edge_img):
             points.append((i[0], i[1]))
     return points
 
+# 根据边缘检测图 输出圆心坐标
+def get_circle_draw(edge_img,img):
+    points = []
+    # 使用霍夫变换检测圆形
+    circles = cv2.HoughCircles(edge_img, cv2.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=10, maxRadius=26)
+
+    # 如果找到圆形，则绘制出来
+    if circles is not None:
+        circles = np.uint16(np.around(circles))
+        for i in circles[0, :]:
+
+            # 绘制外圆
+            cv2.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
+            # 绘制圆心
+            cv2.circle(img, (i[0], i[1]), 2, (0, 0, 255), 3)
+
+            points.append((i[0], i[1]))
+    return points
+
+# Canny edge detection
+def canny_edge(img, sigma=0.33):
+    v = np.median(img)
+    lower = int(max(0, (1.0 - sigma) * v))
+    upper = int(min(255, (1.0 + sigma) * v))
+    edges = cv2.Canny(img, lower, upper)
+    return edges
 # def write_text:
 
 if __name__ == '__main__':
